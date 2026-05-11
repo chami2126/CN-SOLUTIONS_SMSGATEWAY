@@ -16,12 +16,12 @@ export async function POST(request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.TEXTLK_API_KEY}` // ← මේක අලුත්
       },
       body: JSON.stringify({
-        api_key: process.env.TEXTLK_API_KEY, // ← api_token නෙමෙයි, api_key
         recipient: cleanNumber,
-        sender_id: 'TextLK', // දැන් Approved Sender ID එකක් ඕන. TextLK Try කරමු
+        sender_id: 'CNSMS', // ← Approved එකක් ඕන. CNSMS Request කරපන්
         message: message
       })
     });
