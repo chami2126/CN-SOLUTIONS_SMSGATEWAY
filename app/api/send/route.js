@@ -12,7 +12,7 @@ export async function POST(request) {
       return Response.json({ error: "Phone and message required" }, { status: 400 });
     }
 
-    // TextLK HTTP API - DOCS වලට අනුව 100% හරි Format එක
+    // TextLK HTTP API - Sender ID Fix
     const res = await fetch('https://app.text.lk/api/http/sms/send', {
       method: 'POST',
       headers: {
@@ -22,7 +22,7 @@ export async function POST(request) {
       body: JSON.stringify({
         api_token: process.env.TEXTLK_API_KEY,
         recipient: cleanNumber,
-        sender_id: 'TextLK', // Docs එකේ REQUIRED කියලා තියෙන්නේ
+        sender_id: '94742952930', // ← මේක තමයි වෙනස. උඹේ Number එක
         message: message
       })
     });
