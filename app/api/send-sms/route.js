@@ -27,7 +27,7 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         recipient: cleanNumber,
-        sender_id: 'CNSMS', // TextLKDemo නෙමෙයි, CNSMS
+        sender_id: 'Notify', // TextLKDemo නෙමෙයි, CNSMS
         message: message
       })
     });
