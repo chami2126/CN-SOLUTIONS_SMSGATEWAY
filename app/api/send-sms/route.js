@@ -5,13 +5,11 @@ export async function POST(request) {
     const body = await request.json();
     const { phone, message } = body;
 
-    // 1. Phone number clean කරනවා
     let cleanNumber = phone?.replace(/\\s|-/g, '') || '';
     if (cleanNumber.startsWith('0')) {
       cleanNumber = '94' + cleanNumber.substring(1);
     }
 
-    // 2. Validation
     if (!cleanNumber || !message) {
       return NextResponse.json(
         { success: false, error: "Phone and message required" }, 
@@ -19,8 +17,8 @@ export async function POST(request) {
       );
     }
 
-    // 3. TextLK API එකට Call කරනවා - v1 Endpoint
-    const res = await fetch('https://app.text.lk/api/v1/sms/send', {
+    // හරි URL එක v3 තමයි
+    const res = await fetch('https://app.text.lk/api/v3/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,14 +27,13 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         recipient: cleanNumber,
-        sender_id: 'CNSMS', // TextLKDemo වෙනුවට CNSMS
+        sender_id: 'CNSMS', // TextLKDemo නෙමෙයි, CNSMS
         message: message
       })
     });
 
     const data = await res.json();
     
-    // 4. TextLK Response එක Check කරනවා
     if (res.ok && data.status === 'success') {
       return NextResponse.json({ 
         success: true, 
@@ -44,7 +41,6 @@ export async function POST(request) {
         data: data 
       });
     } else {
-      // TextLK එකෙන් Error එකක් ආවොත්
       return NextResponse.json({ 
         success: false, 
         error: data.message || 'TextLK API Error',
@@ -53,7 +49,6 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    // Code එකේම Error එකක් ආවොත්
     console.error('Function Error:', error);
     return NextResponse.json({ 
       success: false, 
