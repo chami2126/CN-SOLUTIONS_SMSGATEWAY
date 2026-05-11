@@ -14,17 +14,16 @@ export async function POST(request) {
       return NextResponse.json({ error: "Phone and message required" }, { status: 400 });
     }
 
-    // TextLK v3 API - OAuth 2.0
     const res = await fetch('https://app.text.lk/api/v3/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${process.env.TEXTLK_TOKEN}` // TEXTLK_TOKEN තමයි හරි
+        'Authorization': `Bearer ${process.env.TEXTLK_TOKEN}`
       },
       body: JSON.stringify({
         recipient: cleanNumber,
-        sender_id: 'TextLKDemo', // Active Sender ID
+        sender_id: 'TextLKDemo',
         message: message
       })
     });
@@ -39,4 +38,5 @@ export async function POST(request) {
 
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
- hereafter 
+  }
+}
