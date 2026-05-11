@@ -12,24 +12,16 @@ export async function POST(request) {
       return Response.json({ error: "Phone and message required" }, { status: 400 });
     }
 
-    // TextLK v3 HTTP API - හරිම Format එක
-    const res = await fetch('https://app.text.lk/api/http/sms/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        api_token: process.env.TEXTLK_API_KEY,  // Bearer නෙමෙයි, Body එකේ
-        recipient: cleanNumber,
-        sender_id: 'TextLK',
-        message: message
-      })
+    // TextLK HTTP API - හරිම හරිම Format එක
+    const url = `https://app.text.lk/api/http/sms/send?token=${process.env.TEXTLK_API_KEY}&to=${cleanNumber}&message=${encodeURIComponent(message)}`;
+    
+    const res = await fetch(url, {
+      method: 'GET'  // HTTP API එක GET Method එකක්!
     });
 
     const data = await res.json();
     
-    if (data.status === 'success' || data.status === 'queued') {
+    if (data.status === 'success' || data.status_code === 200) {
       return Response.json({ success: true, data });
     } else {
       return Response.json({ error: data.message || 'Failed' }, { status: 400 });
