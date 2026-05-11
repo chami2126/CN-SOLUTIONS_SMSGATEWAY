@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CNSMS Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div id="loginPage" class="flex items-center justify-center min-h-screen">
+    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
+      <h1 class="text-3xl font-bold text-center mb-6 text-cyan-400">CNSMS Admin</h1>
+      <div id="loginError" class="hidden bg-red-500/20 border-red-500 text-red-300 px-4 py-2 rounded mb-4"></div>
+      <input id="username" type="text" placeholder="Username" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 mb-4 focus:outline-none focus:border-cyan-400">
+      <input id="password" type="password" placeholder="Password" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 mb-6 focus:outline-none focus:border-cyan-400">
+      <button onclick="login()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded transition">Login</button>
+    </div>
+  </div>
+
+  <div id="dashboard" class="hidden p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-cyan-400">CNSMS Admin Panel</h1>
+        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">Logout</button>
+      </div>
+
+      <div class="bg-gray-800 p-6 rounded-lg mb-8">
+        <h2 class="text-xl font-bold mb-4">Add New Number</h2>
+        <div id="addError" class="hidden bg-red-500/20 border border-red-500 text-red-300 px-4 py-2 rounded mb-4"></div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <input id="phoneNumber" type="text" placeholder="94771234567" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+          <input id="senderId" type="text" placeholder="Sender ID" class="bg-gray-700 border border-gray-600 rounded px-4 py-2 focus:outline-none focus:border-cyan-400">
+          <button onclick="addNumber()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded transition">Add Number</button>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-xl font-bold mb-4">Allowed Numbers</h2>
+        <div id="loading" class="text-center py-8 text-gray-400">Loading...</div>
+        <div id="numbersList" class="hidden space-y-2"></div>
+        <div id="noNumbers" class="hidden text-center py-8 text-gray-400">No numbers added yet</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/.netlify/functions/api';
+    
+    if (localStorage.getItem('cnsms_logged_in')) {
+      showDashboard();
+      loadNumbers();
+    }
+
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('loginError');
+      
+      try {
+        const res = await fetch(API + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (res.ok) {
+          localStorage.setItem('cnsms_logged_in', 'true');
+          showDashboard();
+          loadNumbers();
+        } else {
+          errorDiv.textContent = 'Invalid username or password';
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Login failed: ' + err.message;
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('cnsms_logged_in');
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+    }
+
+    function showDashboard() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+    }
+
+    async function loadNumbers() {
+      const loading = document.getElementById('loading');
+      const list = document.getElementById('numbersList');
+      const noNumbers = document.getElementById('noNumbers');
+      
+      try {
+        const res = await fetch(API + '/numbers');
+        const data = await res.json();
+        
+        loading.classList.add('hidden');
+        
+        if (data.length === 0) {
+          noNumbers.classList.remove('hidden');
+          list.classList.add('hidden');
+        } else {
+          noNumbers.classList.add('hidden');
+          list.classList.remove('hidden');
+          list.innerHTML = data.map(n => `
+            <div class="flex justify-between items-center bg-gray-700 p-4 rounded">
+              <div>
+                <div class="font-bold text-cyan-400">${n.phone_number}</div>
+                <div class="text-sm text-gray-400">Sender: ${n.sender_id}</div>
+              </div>
+              <button onclick="deleteNumber(${n.id})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm font-semibold">Delete</button>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        loading.textContent = 'Failed to load: ' + err.message;
+      }
+    }
+
+    async function addNumber() {
+      const phone_number = document.getElementById('phoneNumber').value.trim();
+      const sender_id = document.getElementById('senderId').value.trim();
+      const errorDiv = document.getElementById('addError');
+      
+      if (!phone_number || !sender_id) {
+        errorDiv.textContent = 'Please fill both fields';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      try {
+        const res = await fetch(API + '/numbers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone_number, sender_id })
+        });
+        
+        if (res.ok) {
+          document.getElementById('phoneNumber').value = '';
+          document.getElementById('senderId').value = '';
+          errorDiv.classList.add('hidden');
+          loadNumbers();
+        } else {
+          const err = await res.json();
+          errorDiv.textContent = err.error || 'Failed to add number';
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Error: ' + err.message;
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    async function deleteNumber(id) {
+      if (!confirm('Delete this number?')) return;
+      
+      try {
+        await fetch(API + '/numbers', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        loadNumbers();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+</body>
+</html>
