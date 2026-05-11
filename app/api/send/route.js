@@ -12,7 +12,6 @@ export async function POST(request) {
       return Response.json({ error: "Phone and message required" }, { status: 400 });
     }
 
-    // TextLK HTTP API - Sender ID Fix
     const res = await fetch('https://app.text.lk/api/http/sms/send', {
       method: 'POST',
       headers: {
@@ -20,9 +19,9 @@ export async function POST(request) {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        api_token: process.env.TEXTLK_API_KEY,
+        api_key: process.env.TEXTLK_API_KEY, // ← api_token නෙමෙයි, api_key
         recipient: cleanNumber,
-        sender_id: '94742952930', // ← මේක තමයි වෙනස. උඹේ Number එක
+        sender_id: 'TextLK', // දැන් Approved Sender ID එකක් ඕන. TextLK Try කරමු
         message: message
       })
     });
@@ -32,11 +31,10 @@ export async function POST(request) {
     if (data.status === 'success' || data.status_code === 200) {
       return Response.json({ success: true, data });
     } else {
-      return Response.json({ error: `TextLK Response: ${JSON.stringify(data)}` }, { status: 400 });
+      return Response.json({ error: `TextLK: ${JSON.stringify(data)}` }, { status: 400 });
     }
 
   } catch (error) {
-    console.error("SMS Error:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: `Server: ${error.message}` }, { status: 500 });
   }
 }
