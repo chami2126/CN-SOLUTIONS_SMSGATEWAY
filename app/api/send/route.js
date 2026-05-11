@@ -32,7 +32,7 @@ export async function POST(request) {
     if (data.status === 'success' || data.status_code === 200) {
       return Response.json({ success: true, data });
     } else {
-      return Response.json({ error: data.message || 'Failed to send SMS' }, { status: 400 });
+      return Response.json({ error: `TextLK Response: ${JSON.stringify(data)}` }, { status: 400 });
     }
 
   } catch (error) {
