@@ -14,6 +14,9 @@ export async function POST(request) {
       return NextResponse.json({ error: "Phone and message required" }, { status: 400 });
     }
 
+    console.log('Sending to:', cleanNumber); // Debug
+    console.log('Token exists:', !!process.env.TEXTLK_TOKEN); // Debug
+
     const res = await fetch('https://app.text.lk/api/v3/sms/send', {
       method: 'POST',
       headers: {
@@ -29,6 +32,7 @@ export async function POST(request) {
     });
 
     const data = await res.json();
+    console.log('TextLK Response:', data); // Debug
 
     if (data.status === 'success') {
       return NextResponse.json({ success: true, message: 'SMS Sent!', data });
@@ -37,6 +41,7 @@ export async function POST(request) {
     }
 
   } catch (error) {
+    console.error('Function Error:', error); // Debug
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
