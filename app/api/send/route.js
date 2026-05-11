@@ -21,7 +21,7 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         recipient: cleanNumber,
-        sender_id: 'CNSMS', // ← Approved එකක් ඕන. CNSMS Request කරපන්
+        sender_id: 'TextLKDemo', // ← Approved එකක් ඕන. CNSMS Request කරපන්
         message: message
       })
     });
