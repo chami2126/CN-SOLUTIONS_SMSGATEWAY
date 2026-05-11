@@ -16,10 +16,10 @@ export async function POST(request) {
     // Fix 2: TextLK API Call - Sender ID නෑ
     const res = await fetch('https://api.text.lk/v1/sms/send', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.TEXTLK_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
+  headers: {
+  'apikey': process.env.TEXTLK_API_KEY,  // Bearer නෑ, apikey විතරයි
+  'Content-Type': 'application/json'
+}
       body: JSON.stringify({
         to: cleanNumber,
         message: message
