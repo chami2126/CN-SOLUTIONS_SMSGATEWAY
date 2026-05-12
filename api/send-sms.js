@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, message: 'Login successful' });
   }
 
-  // Text.lk SMS API Call
+  // Text.lk SMS API Call - Fixed Version
   if (action === 'sms') {
     if (!number || !message) {
       return res.status(400).json({ error: 'Phone number and message required' });
@@ -27,8 +27,9 @@ export default async function handler(req, res) {
       const textlkRes = await fetch('https://app.text.lk/api/v3/sms/send', {
         method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.DIALOG_TOKEN}`
+          'Authorization': process.env.DIALOG_TOKEN // Bearer නැතුව දාපන්
         },
         body: JSON.stringify({
           recipient: number,
@@ -40,7 +41,7 @@ export default async function handler(req, res) {
 
       const data = await textlkRes.json();
 
-      if (data.status === 'success') {
+      if (data.status === 'success' || data.status === 200) {
         return res.status(200).json({
           success: true,
           message: 'SMS sent successfully',
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
         });
       } else {
         return res.status(400).json({ 
-          error: data.message || 'Text.lk API error' 
+          error: data.message || 'Text.lk API error: ' + JSON.stringify(data)
         });
       }
 
