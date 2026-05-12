@@ -8,7 +8,6 @@ export default async function handler(req, res) {
 
   const { username, password, number, message, action } = req.body;
 
-  // Login Check
   if (username !== process.env.ADMIN_USER || password !== process.env.ADMIN_PASS) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -17,13 +16,11 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, message: 'Login successful' });
   }
 
-  // Text.lk SMS API - Final Version
   if (action === 'sms') {
     if (!number || !message) {
       return res.status(400).json({ error: 'Phone number and message required' });
     }
 
-    // Convert 07XXXXXXXX to 947XXXXXXXX
     let formattedNumber = number;
     if (number.startsWith('07')) {
       formattedNumber = '94' + number.substring(1);
@@ -37,7 +34,7 @@ export default async function handler(req, res) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.DIALOG_TOKEN}` // Bearer දාන්න ඕන
+          'X-API-KEY': process.env.DIALOG_TOKEN // මේක Try කරපන්
         },
         body: JSON.stringify({
           recipient: formattedNumber,
