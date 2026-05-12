@@ -38,7 +38,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           recipient: formattedNumber,
-          sender_id: 'TextLK',
+          sender_id: 'TextLKDemo',
           type: 'plain',
           message: message
         })
