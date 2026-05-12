@@ -17,10 +17,18 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, message: 'Login successful' });
   }
 
-  // Text.lk SMS API Call - Fixed Version
+  // Text.lk SMS API - Final Version
   if (action === 'sms') {
     if (!number || !message) {
       return res.status(400).json({ error: 'Phone number and message required' });
+    }
+
+    // Convert 07XXXXXXXX to 947XXXXXXXX
+    let formattedNumber = number;
+    if (number.startsWith('07')) {
+      formattedNumber = '94' + number.substring(1);
+    } else if (!number.startsWith('94')) {
+      formattedNumber = '94' + number;
     }
 
     try {
@@ -29,10 +37,10 @@ export default async function handler(req, res) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': process.env.DIALOG_TOKEN // Bearer නැතුව දාපන්
+          'Authorization': `Bearer ${process.env.DIALOG_TOKEN}` // Bearer දාන්න ඕන
         },
         body: JSON.stringify({
-          recipient: number,
+          recipient: formattedNumber,
           sender_id: 'TextLK',
           type: 'plain',
           message: message
@@ -41,7 +49,7 @@ export default async function handler(req, res) {
 
       const data = await textlkRes.json();
 
-      if (data.status === 'success' || data.status === 200) {
+      if (data.status === 'success' || textlkRes.ok) {
         return res.status(200).json({
           success: true,
           message: 'SMS sent successfully',
@@ -49,7 +57,7 @@ export default async function handler(req, res) {
         });
       } else {
         return res.status(400).json({ 
-          error: data.message || 'Text.lk API error: ' + JSON.stringify(data)
+          error: data.message || JSON.stringify(data)
         });
       }
 
